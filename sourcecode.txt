@@ -1,0 +1,1730 @@
+package com.example.demo;
+
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+
+import lombok.Data;
+
+@Data
+@Entity
+public class AccountPojo {
+	
+	@Id
+	int id;
+	String AccountNumber;
+	String AccountHolderName;
+	String Password;
+	int balance;
+	
+
+}
+
+
+
+package com.example.demo;
+import org.springframework.data.jpa.repository.JpaRepository;
+public interface AccountRepo extends JpaRepository<AccountPojo, Integer>{
+}
+
+
+package com.example.demo;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+
+public class AdminDAO {
+	
+	@Autowired
+	AdminRepo ar;
+	public List<AdminPojo> getall() {
+		// TODO Auto-generated method stub
+		
+			return ar.findAll();
+		
+	}
+
+}
+
+package com.example.demo;
+
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+
+import lombok.Data;
+
+@Data
+@Entity
+public class AdminPojo {
+	@Id
+	@GeneratedValue(strategy = GenerationType.AUTO)
+	int UserId;
+	
+	String UserName;
+	String Password;
+}
+
+
+
+
+package com.example.demo;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+
+public interface AdminRepo extends JpaRepository<AdminPojo, Integer> {
+
+	
+
+}
+
+
+package com.example.demo;
+
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+
+import lombok.Data;
+
+@Data
+@Entity
+public class appliance_pojo {
+
+	@Id
+	@GeneratedValue(strategy=GenerationType.AUTO)
+    int id;
+	
+	String name;
+	String description;
+	String filepath;
+	String ApplianceName;
+	int price;
+}
+
+
+
+package com.example.demo;
+import org.springframework.data.jpa.repository.JpaRepository;
+public interface appliancerepo extends JpaRepository<appliance_pojo, Integer>{
+}
+
+
+
+
+package com.example.demo;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.List;
+
+
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+
+
+@Service
+public class dbservice {
+	
+	
+	@Autowired
+	FoodRepo dr;
+	private String Folder_Path="C:\\Users\\Admin\\Documents\\workspace-spring-tool-suite-4-4.17.1.RELEASE\\JAVA_FSD_Phase3_Project2\\src\\main\\webapp\\images\\";
+	
+	public String uploadImage(MultipartFile file) throws IOException
+	{
+		FoodPojo s=new FoodPojo();
+		String fileinfo=Folder_Path+file.getOriginalFilename();
+		s.setFilepath(fileinfo);
+		FoodPojo response=dr.save(s);
+		file.transferTo(new File(fileinfo) );
+		if(response!=null)
+		{
+			return "The Shoe added successfully in system";
+		}
+		else
+		return null;
+	}
+	
+	public List<FoodPojo> download()
+	{
+		List<FoodPojo> sd=new ArrayList<FoodPojo>();
+		sd=dr.findAll();
+		return sd;
+	}
+	
+	public byte[] seperate(String filepath) throws IOException
+	{
+		
+		byte[] image=Files.readAllBytes(new File(filepath).toPath());
+		
+		return image;
+	}
+
+}
+
+package com.example.demo;
+
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+
+import lombok.Data;
+
+@Data
+@Entity
+public class FoodPojo {
+	
+	@Id
+	@GeneratedValue(strategy=GenerationType.AUTO)
+    int id;
+	
+	String name;
+	String description;
+	String filepath;
+	String foodname;
+	int price;
+
+}
+
+
+package com.example.demo;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+
+public interface FoodRepo extends JpaRepository<FoodPojo, Integer> {
+
+
+}
+
+
+package com.example.demo;
+
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+
+import lombok.Data;
+
+@Data
+@Entity
+public class grocery {
+	
+	@Id
+	@GeneratedValue(strategy=GenerationType.AUTO)
+    int id;
+	
+	String name;
+	String description;
+	String filepath;
+	String GroceryName;
+	int price;
+
+}
+
+
+
+package com.example.demo;
+import org.springframework.data.jpa.repository.JpaRepository;
+public interface groceryrepo extends JpaRepository<grocery, Integer> {
+}
+
+
+
+package com.example.demo;
+
+import java.io.ByteArrayOutputStream;
+import java.util.zip.DataFormatException;
+import java.util.zip.Deflater;
+import java.util.zip.Inflater;
+
+import org.hibernate.type.descriptor.java.UUIDTypeDescriptor.ToBytesTransformer;
+
+public class ImageUtil {
+	
+	//compress an image -util.zip.deflater
+	
+	public static byte[] compress(byte[] data)
+	{
+		Deflater deflater=new Deflater();
+		deflater.setLevel(Deflater.BEST_COMPRESSION);
+		deflater.setInput(data);
+		deflater.finish();
+		
+		ByteArrayOutputStream out=new ByteArrayOutputStream(data.length);
+		byte[] temp=new byte[1024*4];
+		
+		while(!deflater.finished())
+		{
+			int size=deflater.deflate(temp);
+			out.write(temp,0,size);
+		}
+		return out.toByteArray();
+		
+	}
+
+	
+	public static byte[] decompress(byte[] data) throws DataFormatException
+	{
+		Inflater inflater=new Inflater();
+		inflater.setInput(data);
+		ByteArrayOutputStream out=new ByteArrayOutputStream(data.length);
+		byte[] temp=new byte[1024*4];
+		while(!inflater.finished())
+		{
+			int size=inflater.inflate(temp);
+			out.write(temp,0,size);
+		}
+		return out.toByteArray();
+	}
+}
+
+
+package com.example.demo;
+
+import java.util.List;
+
+import java.util.logging.Logger;
+
+
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.ModelAndView;
+
+@Controller
+public class MainController {
+	
+	@Autowired
+	UserDAO dao;
+	
+	@Autowired
+	dbservice service;
+	
+	@Autowired
+	FoodRepo sr;
+	
+	@Autowired
+	AdminRepo ar;
+	
+	@Autowired
+	AccountRepo arp;
+	
+	@Autowired
+	groceryrepo gr;
+	
+	@Autowired
+	appliancerepo appr;
+	
+	@Autowired
+	vegitablerepo vr;
+	
+	@RequestMapping("/")
+	public ModelAndView displaypage(HttpServletRequest request,HttpServletResponse response) {
+		ModelAndView mv=new ModelAndView();
+		mv.setViewName("Index.jsp");
+		return mv;
+	}
+	
+	@RequestMapping("/InsertUser")
+	public ModelAndView InsertUser(HttpServletRequest request, HttpServletResponse response)
+	{
+		ModelAndView mv=new ModelAndView();
+		UserPojo u=new UserPojo();
+		u.setUserName(request.getParameter("UserName"));
+		u.setPassword(request.getParameter("Password"));
+		UserPojo up=dao.insert(u);
+		System.out.println(up);
+		if(up!=null)
+		{
+			mv.setViewName("Index.jsp");
+		}
+		return mv;
+	}
+	
+
+	
+	@RequestMapping("/LoginCheck")
+	public ModelAndView LoginCheck(HttpServletRequest request, HttpServletResponse response)
+	{
+		ModelAndView mv=new ModelAndView();
+		boolean b=false;
+		
+		List<UserPojo> list=dao.getall();
+		
+		System.out.println(list);
+		
+		for(UserPojo u:list)
+		{
+			if(u.getUserName().equals(request.getParameter("UserName"))==true && u.getPassword().equals(request.getParameter("Password"))==true)
+			{
+				b=true;
+			}
+		}
+		System.out.println(b);
+		if(b==true)
+		{
+			
+			List<FoodPojo> list1=sr.findAll();
+			mv.setViewName("MainPage.jsp");
+			
+		}
+		else
+		{
+			mv.setViewName("LoginFailed.jsp");
+			
+		}
+		
+		
+		return mv;
+	}
+	
+	
+	@RequestMapping("/AdminLoginCheck")
+	public ModelAndView AdminLoginCheck(HttpServletRequest request, HttpServletResponse response)
+	{
+		ModelAndView mv=new ModelAndView();
+		boolean b=false;
+		AdminDAO da=new AdminDAO();
+		List<AdminPojo> list=ar.findAll();
+		
+		System.out.println(list);
+		
+		for(AdminPojo u:list)
+		{
+			if(u.getUserName().equals(request.getParameter("UserName"))==true && u.getPassword().equals(request.getParameter("Password"))==true)
+			{
+				b=true;
+			}
+		}
+		System.out.println(b);
+		if(b==true)
+		{
+			
+			List<FoodPojo> list1=sr.findAll();
+			mv.setViewName("adminadd.jsp");
+			mv.addObject("list",list1);
+		}
+		else
+		{
+			mv.setViewName("LoginFailedAdmin.jsp");
+		}
+		
+		
+		return mv;
+	}
+	
+	Logger log=Logger.getAnonymousLogger();
+	private String Folder_Path="C:\\Users\\Admin\\Documents\\workspace-spring-tool-suite-4-4.17.1.RELEASE\\JAVA_FSD_Phase3_Project2\\src\\main\\webapp\\images\\";
+	@RequestMapping("/additem")
+	public ModelAndView AddItem(HttpServletRequest request,HttpServletResponse response, @RequestParam("file") MultipartFile file)  {
+		ModelAndView mv=new ModelAndView();
+		
+		if(request.getParameter("item").equals("Grocery"))
+		{
+		grocery data=new grocery();
+		data.setName(file.getOriginalFilename());
+		data.setDescription(request.getParameter("desc"));
+		data.setGroceryName(request.getParameter("name"));
+		data.setPrice(Integer.parseInt(request.getParameter("price")));
+		String fileinfo=Folder_Path+file.getOriginalFilename();
+		data.setFilepath(fileinfo);
+		
+		
+		grocery s1=gr.save(data);
+		mv.setViewName("ItemAddedSuccess.jsp");
+		return mv;
+		}
+		
+		else if(request.getParameter("item").equals("Appliances"))
+		{
+			appliance_pojo data=new appliance_pojo();
+			data.setName(file.getOriginalFilename());
+			data.setDescription(request.getParameter("desc"));
+			data.setApplianceName(request.getParameter("name"));
+			data.setPrice(Integer.parseInt(request.getParameter("price")));
+			String fileinfo=Folder_Path+file.getOriginalFilename();
+			data.setFilepath(fileinfo);
+			
+			
+			appliance_pojo s2=appr.save(data);
+			mv.setViewName("ItemAddedSuccess.jsp");
+			return mv;
+		}
+		
+		else if(request.getParameter("item").equals("Vegetables"))
+		{
+			vegetables data=new vegetables();
+			data.setName(file.getOriginalFilename());
+			data.setDescription(request.getParameter("desc"));
+			data.setName(request.getParameter("name"));
+			data.setPrice(Integer.parseInt(request.getParameter("price")));
+			String fileinfo=Folder_Path+file.getOriginalFilename();
+			data.setFilepath(fileinfo);
+			
+			
+			vegetables s1=vr.save(data);
+			mv.setViewName("ItemAddedSuccess.jsp");
+			return mv;
+		}
+		return mv;
+			
+	}
+	
+	
+	
+	@RequestMapping("/getgrocery")
+	public ModelAndView getall(HttpServletRequest request,HttpServletResponse response)
+	{
+		ModelAndView mv=new ModelAndView();
+		if(request.getParameter("item").equals("Grocery"))
+		{
+		List<grocery> list=gr.findAll();
+		mv.setViewName("GroceryList.jsp");
+		mv.addObject("list",list);
+		return mv;
+		}
+		
+		
+		
+		
+		return mv;
+	}
+	
+	@RequestMapping("/ItemListAdmin")
+	public ModelAndView getListforAdmin(HttpServletRequest request,HttpServletResponse response)
+	{
+		ModelAndView mv=new ModelAndView();
+		
+		if(request.getParameter("item").equals("Grocery"))
+		{
+		List<grocery> list=gr.findAll();
+		mv.setViewName("AdminGroceryList.jsp");
+		mv.addObject("list",list);
+		return mv;
+	    }
+		
+		else if(request.getParameter("item").equals("Appliances"))
+		{
+			List<appliance_pojo> list=appr.findAll();
+			mv.setViewName("AdminApplianceList.jsp");
+			mv.addObject("list",list);
+			return mv;
+		}
+		
+		else if(request.getParameter("item").equals("Vegetables"))
+		{
+			List<vegetables> list=vr.findAll();
+			mv.setViewName("AdminVegitablesList.jsp");
+			mv.addObject("list",list);
+			return mv;
+		}
+		return mv;
+}
+
+	@RequestMapping("/deleteshoe")
+	public ModelAndView deleteshoe(HttpServletRequest request,HttpServletResponse response)  {
+		ModelAndView mv=new ModelAndView();
+		sr.deleteById(Integer.parseInt(request.getParameter("id")));
+		mv.setViewName("FoodDeletedSuccess.jsp");
+		return mv;
+	}
+	
+	@RequestMapping("/deleteitem")
+	public ModelAndView deleteItem(HttpServletRequest request,HttpServletResponse response)  {
+		ModelAndView mv=new ModelAndView();
+		
+		if(request.getParameter("item1").equals("Grocery"))
+		{
+			gr.deleteById(Integer.parseInt(request.getParameter("id")));
+		    mv.setViewName("ItemDeletedSuccess.jsp");
+		return mv;
+		}
+		else if(request.getParameter("item1").equals("Appliances"))
+		{
+			appr.deleteById(Integer.parseInt(request.getParameter("id")));
+		    mv.setViewName("ItemDeletedSuccess.jsp");
+		return mv;
+		}
+		
+		else if(request.getParameter("item1").equals("Vegetables"))
+		{
+			vr.deleteById(Integer.parseInt(request.getParameter("id")));
+		    mv.setViewName("ItemDeletedSuccess.jsp");
+		return mv;
+		}
+		
+		return mv;
+		
+		
+	}
+		
+		
+	@RequestMapping("/accountcheck")
+	public ModelAndView accountcheck(HttpServletRequest request, HttpServletResponse response)
+	{
+		ModelAndView mv=new ModelAndView();
+		boolean b=false;
+		
+		List<AccountPojo> list=arp.findAll();
+		
+		System.out.println(list);
+		
+		for(AccountPojo u:list)
+		{
+			if(u.getAccountNumber().equals(request.getParameter("AccountNumber"))==true && u.getAccountHolderName().equals(request.getParameter("AccountHolderName"))==true && u.getPassword().equals(request.getParameter("Password"))==true)
+			{
+				if(Integer.parseInt(request.getParameter("price"))<u.getBalance())
+				{
+					b=true;
+					int temp=u.getBalance()-Integer.parseInt(request.getParameter("price"));
+					u.setBalance(temp);
+					arp.save(u);
+					mv.setViewName("SuccessfulBuy.jsp");
+					break;
+				}
+				
+				else
+				{
+					mv.setViewName("LowBalance.jsp");
+				}
+				
+			}
+			
+			
+		}
+		
+		if(b!=true)
+			{
+				mv.setViewName("WrongDetails.jsp");
+				mv.addObject("price", request.getParameter("price"));
+			}
+		
+		return mv;
+	}
+	
+	@RequestMapping("/groceryitemlist")
+	public ModelAndView groceryitemlist(HttpServletRequest request, HttpServletResponse response)
+	{
+		ModelAndView mv=new ModelAndView();
+		List<grocery> list=gr.findAll();
+		mv.setViewName("grocerylistuser.jsp");
+		mv.addObject("list",list);
+		
+		return mv;
+		
+	}
+	
+	@RequestMapping("/search")
+	public ModelAndView search(HttpServletRequest request, HttpServletResponse response)
+	{
+		ModelAndView mv=new ModelAndView();
+		String s=request.getParameter("search");
+		if(s.equals("food") ||s.equals("jawar") ||s.equals("bajra") ||s.equals("sugar") ||s.equals("gehu") ||s.equals("chana dal") )
+		{
+			List<grocery> list=gr.findAll();
+			mv.setViewName("grocerylistuser.jsp");
+			mv.addObject("list",list);
+			return mv;
+		}
+		
+		
+		if(s.equals("appliances") ||s.equals("home appliances") ||s.equals("mixer") ||s.equals("washing machine") ||s.equals("filter") ||s.equals("chopper") )
+		{
+			List<appliance_pojo> list=appr.findAll();
+			mv.setViewName("appliancelistuser.jsp");
+			mv.addObject("list",list);
+			return mv;
+		}
+		
+		if(s.equals("vegitables") ||s.equals("tomato") ||s.equals("potato") ||s.equals("pumpkin") ||s.equals("coriander") ||s.equals("capsicum") )
+		{
+			List<vegetables> list=vr.findAll();
+			mv.setViewName("vegetableslistuser.jsp");
+			mv.addObject("list",list);
+			return mv;
+		}
+		return mv;
+		
+	}
+	
+	
+	
+
+}
+
+
+package com.example.demo;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+@Service
+public class UserDAO {
+
+	@Autowired
+	UserRepo ur;
+	public UserPojo insert(UserPojo u) {
+		
+		
+		return ur.save(u);
+	}
+	public List<UserPojo> getall() {
+		// TODO Auto-generated method stub
+		
+			return ur.findAll();
+		
+	}
+	
+	
+
+}
+
+
+
+
+package com.example.demo;
+
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+
+import lombok.Data;
+
+@Entity
+@Data
+public class UserPojo {
+	
+	@Id
+	@GeneratedValue(strategy = GenerationType.AUTO)
+	int UserId;
+	
+	String UserName;
+	String Password;
+
+}
+
+
+package com.example.demo;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+@Repository
+public interface UserRepo extends JpaRepository<UserPojo, Integer> {
+
+}
+
+
+package com.example.demo;
+
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+
+import lombok.Data;
+
+@Data
+@Entity
+public class vegetables {
+	
+	@Id
+	@GeneratedValue(strategy=GenerationType.AUTO)
+    int id;
+	
+	String name;
+	String description;
+	String filepath;
+	String vegitableName;
+	int price;
+
+}
+
+
+package com.example.demo;
+import org.springframework.data.jpa.repository.JpaRepository;
+public interface vegitablerepo extends JpaRepository<vegetables, Integer>{
+}
+
+
+
+
+
+
+Jsp pages
+
+
+
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+pageEncoding="ISO-8859-1"%>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="ISO-8859-1">
+<title>Insert title here</title>
+</head>
+<body background=
+"https://media.geeksforgeeks.org/wp-content/uploads/rk.png">
+<%int price=Integer.parseInt(request.getParameter("price")); %>
+<center>
+<h1>Please fill below details to buy the item</h1>
+<form action="accountcheck">
+<table>
+<tr><td>Account Number</td><td> <input type="text" name="AccountNumber"></td></tr><br>
+<tr><td>Account holder Name</td><td><input type="text" name="AccountHolderName"></td><br>
+<tr>
+<td>Account Password</td><td><input type="password" name="Password"></td>
+<td><input type="hidden" name="price" value="<%=price%>"></td>
+</tr>
+</table>
+<input type="submit">
+</form>
+<br>
+</center>
+</body>
+</html>
+
+
+
+
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+pageEncoding="ISO-8859-1"%>
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+.opacity{
+opacity:1;
+}
+.background {
+background-image: url("images/abstract.jpg");
+background-color: rgba(255,255,255,0.6);
+background-blend-mode: screen;
+background-repeat: no-repeat;
+background-size:cover;
+}
+.no-background {
+background-image: url("images/blank.jpg");
+}
+</style>
+<meta charset="ISO-8859-1">
+<title>Insert title here</title>
+</head>
+<body class="background">
+<div class="opacity">
+<center>
+<form action="additem" method="post" enctype="multipart/form-data"><br>
+<table>
+<tr><td>Name</td><td> <input type="text" name="name"><br></td><br></tr>
+<tr><td>Description</td><td> <input type="text" name="desc"><br></td><br></tr>
+<tr><td>Price</td><td> <input type="text" name="price"><br></td></tr>
+<tr><td>Upload the image of food here</td><td> <input type="file" name="file"><br></td></tr>
+<% String s=request.getParameter("item"); %>
+<input type="hidden" name="item" value=<%=s %>>
+</table>
+<input type="submit">
+</form>
+</center>
+</div>s
+</body>
+</html>
+
+
+
+
+
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+pageEncoding="ISO-8859-1"%>
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+.opacity{
+opacity:1;
+}
+.background {
+background-image: url("images/abstract.jpg");
+background-color: rgba(255,255,255,0.6);
+background-blend-mode: screen;
+background-repeat: no-repeat;
+background-size:cover;
+}
+.no-background {
+background-image: url("images/blank.jpg");
+}
+</style>
+<meta charset="ISO-8859-1">
+<title>Insert title here</title>
+</head>
+<body>
+<form action="additem.jsp">
+<p>Please select which item you want to add</p>
+  <input type="radio" id="Grocery" name="item" value="Grocery">
+  <label for="Grocery">Grocery</label><br>
+  <input type="radio" id="Appliances" name="item" value="Appliances">
+  <label for="Appliences">Appliances</label><br>
+  <input type="radio" id="Vegetables" name="item" value="Vegetables">
+  <label for="Vegitables">Vegetables</label><br><br>
+<input type="submit" value="Submit">
+</form>
+<form action="deleteitem.jsp">
+<p>Please select which item you want to delete</p>
+  <input type="radio" id="Grocery" name="item1" value="Grocery">
+  <label for="Grocery">Grocery</label><br>
+  <input type="radio" id="Appliances" name="item1" value="Appliances">
+  <label for="Appliences">Appliances</label><br>
+  <input type="radio" id="Vegetables" name="item1" value="Vegetables">
+  <label for="Vegitables">Vegetables</label><br><br>
+<input type="submit" value="Submit">
+</form>
+</body>
+</html>
+
+
+
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+pageEncoding="ISO-8859-1"%>
+<%@ page import="java.util.*" %>
+<%@ page import="com.example.demo.*" %>
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+.opacity{
+opacity:1;
+}
+.background {
+background-image: url("images/abstract.jpg");
+background-color: rgba(255,255,255,0.6);
+background-blend-mode: screen;
+background-repeat: no-repeat;
+background-size:cover;
+}
+.no-background {
+background-image: url("images/blank.jpg");
+}
+</style>
+<meta charset="ISO-8859-1">
+<title>Insert title here</title>
+</head>
+<body class="background">
+<div class="opacity">
+<%
+List<appliance_pojo> list=(List<appliance_pojo>)request.getAttribute("list");
+%>
+<table >
+<%
+for(appliance_pojo s:list){
+%>
+<form >
+<tr><td><%=s.getId()%></td><td><img alt="Failed to load an image" src="/images/<%=s.getName()%>" style="width: 100px; height: 100px;"></p></td><td><br><p><%=s.getApplianceName()%></p><p><%=s.getDescription()%></td><br></tr>
+</form>
+<%} %>
+</table>
+<form action="additem.jsp">
+<p>Please select which item you want to add</p>
+  <input type="radio" id="Grocery" name="item" value="Grocery">
+  <label for="Grocery">Grocery</label><br>
+  <input type="radio" id="Appliances" name="item" value="Appliances">
+  <label for="Appliences">Appliances</label><br>
+  <input type="radio" id="Vegitables" name="item" value="Vegitables">
+  <label for="Vegitables">Vegitables</label><br><br>
+<input type="submit" value="Submit">
+</form>
+<form action="deleteitem.jsp">
+<p>Please select which item you want to delete</p>
+  <input type="radio" id="Grocery" name="item1" value="Grocery">
+  <label for="Grocery">Grocery</label><br>
+  <input type="radio" id="Appliances" name="item1" value="Appliances">
+  <label for="Appliences">Appliances</label><br>
+  <input type="radio" id="Vegitables" name="item1" value="Vegitables">
+  <label for="Vegitables">Vegitables</label><br><br>
+<input type="submit" value="Submit">
+</form>
+</div>
+</body>
+</html>
+
+
+
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+pageEncoding="ISO-8859-1"%>
+<%@ page import="java.util.*" %>
+<%@ page import="com.example.demo.*" %>
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+.opacity{
+opacity:1;
+}
+.background {
+background-image: url("images/abstract.jpg");
+background-color: rgba(255,255,255,0.6);
+background-blend-mode: screen;
+background-repeat: no-repeat;
+background-size:cover;
+}
+.no-background {
+background-image: url("images/blank.jpg");
+}
+</style>
+<meta charset="ISO-8859-1">
+<title>Insert title here</title>
+</head>
+<body class="background">
+<div class="opacity">
+<%
+List<appliance_pojo> list=(List<appliance_pojo>)request.getAttribute("list");
+%>
+<table >
+<%
+for(appliance_pojo s:list){
+%>
+<form >
+<tr><td><%=s.getId()%></td><td><img alt="Failed to load an image" src="/images/<%=s.getName()%>" style="width: 100px; height: 100px;"></p></td><td><br><p><%=s.getApplianceName()%></p><p><%=s.getDescription()%></td><br></tr>
+</form>
+<%} %>
+</table>
+<form action="additem.jsp">
+<p>Please select which item you want to add</p>
+  <input type="radio" id="Grocery" name="item" value="Grocery">
+  <label for="Grocery">Grocery</label><br>
+  <input type="radio" id="Appliances" name="item" value="Appliances">
+  <label for="Appliences">Appliances</label><br>
+  <input type="radio" id="Vegitables" name="item" value="Vegitables">
+  <label for="Vegitables">Vegitables</label><br><br>
+<input type="submit" value="Submit">
+</form>
+<form action="deleteitem.jsp">
+<p>Please select which item you want to delete</p>
+  <input type="radio" id="Grocery" name="item1" value="Grocery">
+  <label for="Grocery">Grocery</label><br>
+  <input type="radio" id="Appliances" name="item1" value="Appliances">
+  <label for="Appliences">Appliances</label><br>
+  <input type="radio" id="Vegitables" name="item1" value="Vegitables">
+  <label for="Vegitables">Vegitables</label><br><br>
+<input type="submit" value="Submit">
+</form>
+</div>
+</body>
+</html>
+
+
+
+
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+pageEncoding="ISO-8859-1"%>
+<%@ page import="java.util.*" %>
+<%@ page import="com.example.demo.*" %>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="ISO-8859-1">
+<title>Insert title here</title>
+</head>
+<body>
+<%
+List<grocery> list=(List<grocery>)request.getAttribute("list");
+%>
+<table >
+<%
+for(grocery s:list){
+%>
+<form >
+<tr><td><%=s.getId()%></td><td><img alt="Failed to load an image" src="/images/<%=s.getName()%>" style="width: 100px; height: 100px;"></p></td><td><br><p><%=s.getGroceryName() %></p><p><%=s.getDescription()%></td><br></tr>
+</form>
+<%} %>
+</table>
+<br>
+<form action="additem.jsp">
+<p>Please select which item you want to add</p>
+  <input type="radio" id="Grocery" name="item" value="Grocery">
+  <label for="Grocery">Grocery</label><br>
+  <input type="radio" id="Appliances" name="item" value="Appliences">
+  <label for="Appliences">Appliances</label><br>
+  <input type="radio" id="Vegitables" name="item" value="Vegitables">
+  <label for="Vegitables">Vegitables</label><br><br>
+<input type="submit" value="Submit">
+</form>
+<form action="deleteitem.jsp">
+<p>Please select which item you want to delete</p>
+  <input type="radio" id="Grocery" name="item1" value="Grocery">
+  <label for="Grocery">Grocery</label><br>
+  <input type="radio" id="Appliances" name="item1" value="Appliences">
+  <label for="Appliences">Appliances</label><br>
+  <input type="radio" id="Vegitables" name="item1" value="Vegitables">
+  <label for="Vegitables">Vegitables</label><br><br>
+<input type="submit" value="Submit">
+</form>
+</body>
+</html>
+
+
+
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+pageEncoding="ISO-8859-1"%>
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+.opacity{
+opacity:1;
+}
+.background {
+background-image: url("images/abstract.jpg");
+background-color: rgba(255,255,255,0.6);
+background-blend-mode: screen;
+background-repeat: no-repeat;
+background-size:cover;
+}
+.no-background {
+background-image: url("images/blank.jpg");
+}
+</style>
+<meta charset="ISO-8859-1">
+<title>Insert title here</title>
+</head>
+<body class="background">
+<div class="opacity">
+<center>
+<h1>Welcome to Sporty shoes. Please login or Register</h1>
+<form action="AdminLoginCheck">
+<table>
+<tr><td>UserName</td><td> <input type="text" name="UserName"></td></tr><br>
+<tr><td>Password </td><td><input type="password" name="Password"></td></tr><br>
+</table>
+<br>
+<input type="submit"><br>
+<br>
+</form>
+</center>
+</div>
+</body>
+</html>
+
+
+
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+pageEncoding="ISO-8859-1"%>
+<%@ page import="java.util.*" %>
+<%@ page import="com.example.demo.*" %>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="ISO-8859-1">
+<title>Insert title here</title>
+</head>
+<body class="background">
+<div class="opacity">
+<%
+List<vegetables> list=(List<vegetables>)request.getAttribute("list");
+%>
+<table >
+<%
+for(vegetables s:list){
+%>
+<form >
+<tr><td><%=s.getId()%></td><td><img alt="Failed to load an image" src="/images/<%=s.getName()%>" style="width: 100px; height: 100px;"></p></td><td><br><p><%=s.getVegitableName() %></p><p><%=s.getDescription()%></td><br></tr>
+</form>
+<%} %>
+</table>
+<form action="additem.jsp">
+<p>Please select which item you want to add</p>
+  <input type="radio" id="Grocery" name="item" value="Grocery">
+  <label for="Grocery">Grocery</label><br>
+  <input type="radio" id="Appliances" name="item" value="Appliances">
+  <label for="Appliences">Appliances</label><br>
+  <input type="radio" id="Vegitables" name="item" value="Vegitables">
+  <label for="Vegitables">Vegitables</label><br><br>
+<input type="submit" value="Submit">
+</form>
+<form action="deleteitem.jsp">
+<p>Please select which item you want to delete</p>
+  <input type="radio" id="Grocery" name="item1" value="Grocery">
+  <label for="Grocery">Grocery</label><br>
+  <input type="radio" id="Appliances" name="item1" value="Appliances">
+  <label for="Appliences">Appliances</label><br>
+  <input type="radio" id="Vegitables" name="item1" value="Vegitables">
+  <label for="Vegitables">Vegitables</label><br><br>
+<input type="submit" value="Submit">
+</form>
+</div>
+</body>
+</html>
+
+
+
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+pageEncoding="ISO-8859-1"%>
+<%@ page import="java.util.*" %>
+<%@ page import="com.example.demo.*" %>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="ISO-8859-1">
+<title>Insert title here</title>
+</head>
+<body>
+<h1><i>Hi there, please have fun shopping.</i></h1>
+<%
+List<appliance_pojo> list=(List<appliance_pojo>)request.getAttribute("list");
+%>
+<%
+for(appliance_pojo s:list){
+%>
+<form action="AccountDetails.jsp" method="get">
+<table>
+<tr>
+<td><img alt="Failed to load an image" src="/images/<%=s.getName()%>" style="width: 100px; height: 100px;"></p></td><td><br><p>&nbsp&nbsp&nbsp&nbsp<%=s.getApplianceName() %></h3></h3></p><p>&nbsp&nbsp&nbsp&nbsp<%=s.getDescription()%></td><td><%=s.getPrice()%></td>
+<td>
+<input type="hidden" name="price" value="<%=s.getPrice()%>">
+<input type="submit" value="Buy">
+</form>
+</td>
+</tr>
+</table>
+<%} %>
+</body>
+</html>
+
+
+
+
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+pageEncoding="ISO-8859-1"%>
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+.opacity{
+opacity:1;
+}
+.background {
+background-image: url("images/abstract.jpg");
+background-color: rgba(255,255,255,0.6);
+background-blend-mode: screen;
+background-repeat: no-repeat;
+background-size:cover;
+}
+.no-background {
+background-image: url("images/blank.jpg");
+}
+</style>
+<meta charset="ISO-8859-1">
+<title>Insert title here</title>
+</head>
+<body>
+<center>
+<form action="deleteitem">
+<table>
+<tr><td>Id</td><td> <input type="text" name="id"><br></td><br></tr>
+<% String s=request.getParameter("item1"); %>
+<input type="hidden" name="item1" value=<%=s %>>
+</table>
+<input type="submit">
+</form>
+</center>
+</body>
+</html>
+
+
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+pageEncoding="ISO-8859-1"%>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="ISO-8859-1">
+<title>Insert title here</title>
+</head>
+<body>
+<center>
+<table>
+<form action="deleteshoe"><br>
+Enter shoe id which you want to delete <input type="text" name="id"><br><br><br>
+<input type="submit">
+</form>
+</table>
+</center>
+</body>
+</html>
+
+
+
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+pageEncoding="ISO-8859-1"%>
+<%@ page import="java.util.*" %>
+<%@ page import="com.example.demo.*" %>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="ISO-8859-1">
+<title>Insert title here</title>
+</head>
+<body>
+<h1><i>Hi there, please have fun shopping.</i></h1>
+<%
+List<grocery> list=(List<grocery>)request.getAttribute("list");
+%>
+<form action="AccountDetails.jsp" method="get">
+<%
+for(grocery s:list){
+%>
+<table>
+<tr>
+<td><img alt="Failed to load an image" src="/images/<%=s.getName()%>" style="width: 100px; height: 100px;"></p></td><td><br><p>&nbsp&nbsp&nbsp&nbsp<%=s.getGroceryName() %></h3></h3></p><p>&nbsp&nbsp&nbsp&nbsp<%=s.getDescription()%></td><td><%=s.getPrice()%><p>per kg</p></td>
+<td>
+<input type="hidden" name="price" value="<%=s.getPrice()%>">
+<input type="submit" value="Buy">
+</td>
+</tr>
+</table>
+<%} %>
+</form>
+</body>
+</html>
+
+
+
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+pageEncoding="ISO-8859-1"%>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="ISO-8859-1">
+<title>Kitchen Story</title>
+<style>
+.opacity{
+opacity:1;
+}
+.background {
+background-image: url("images/abstract.jpg");
+background-color: rgba(255,255,255,0.6);
+background-blend-mode: screen;
+background-repeat: no-repeat;
+background-size:cover;
+}
+.no-background {
+background-image: url("images/blank.jpg");
+}
+</style>
+</head>
+<body class="background">
+<div class="opacity">
+<center>
+<h1>Welcome to Sporty shoes. Please login or Register</h1>
+<form action="LoginCheck">
+<table>
+<tr><td>UserName</td><td> <input type="text" name="UserName"></td></tr><br>
+<tr><td>Password </td><td><input type="password" name="Password"></td></tr><br>
+</table>
+<br>
+<input type="submit"><br>
+<br>
+Don't have an account? <a href="http://localhost:8081/UserRegistration.jsp">Register here</a>
+</form>
+</center>
+<center>
+<div>
+<form action="AdminLogin">
+<br>
+<br>
+<br>
+<a href="http://localhost:8081/AdminLogin.jsp">Click here for AdminLogin</a>
+</form>
+</div>
+</center>
+</div>
+</body>
+</html>
+
+
+
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+pageEncoding="ISO-8859-1"%>
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+.opacity{
+opacity:1;
+}
+.background {
+background-image: url("images/abstract.jpg");
+background-color: rgba(255,255,255,0.6);
+background-blend-mode: screen;
+background-repeat: no-repeat;
+background-size:cover;
+}
+.no-background {
+background-image: url("images/blank.jpg");
+}
+</style>
+<meta charset="ISO-8859-1">
+<title>Insert title here</title>
+</head>
+<body class="background">
+<div class="opacity">
+<h1>Item added successfully.</h1>
+<form action="adminadd.jsp">
+<input type="submit" value="Click here to go back">
+</form>
+</div>
+</body>
+</html>
+
+
+
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+pageEncoding="ISO-8859-1"%>
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+.opacity{
+opacity:1;
+}
+.background {
+background-image: url("images/abstract.jpg");
+background-color: rgba(255,255,255,0.6);
+background-blend-mode: screen;
+background-repeat: no-repeat;
+background-size:cover;
+}
+.no-background {
+background-image: url("images/blank.jpg");
+}
+</style>
+<meta charset="ISO-8859-1">
+<title>Insert title here</title>
+</head>
+<body class="background">
+<div class="opacity">
+<h1>Item deleted successfully.</h1>
+<form action="additem.jsp">
+<p>Please select which item you want to add</p>
+  <input type="radio" id="Grocery" name="item" value="Grocery">
+  <label for="Grocery">Grocery</label><br>
+  <input type="radio" id="Appliances" name="item" value="Appliances">
+  <label for="Appliences">Appliances</label><br>
+  <input type="radio" id="Vegitables" name="item" value="Vegitables">
+  <label for="Vegitables">Vegetables</label><br><br>
+<input type="submit" value="Submit">
+</form>
+<form action="deleteitem.jsp">
+<p>Please select which item you want to delete</p>
+  <input type="radio" id="Grocery" name="item1" value="Grocery">
+  <label for="Grocery">Grocery</label><br>
+  <input type="radio" id="Appliances" name="item1" value="Appliances">
+  <label for="Appliences">Appliances</label><br>
+  <input type="radio" id="Vegitables" name="item1" value="Vegitables">
+  <label for="Vegitables">Vegetables</label><br><br>
+<input type="submit" value="Submit">
+</form>
+</div>
+</body>
+</html>
+
+
+
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+pageEncoding="ISO-8859-1"%>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="ISO-8859-1">
+<title>Insert title here</title>
+</head>
+<body style="background-color:khaki;">
+<h1>UserId or password you have entered is not correct. Please enter correct details or register.</h1>
+<form action="Index.jsp">
+<input type="submit" value="Click here to go to login page">
+</form>
+</body>
+</html>
+
+
+
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+pageEncoding="ISO-8859-1"%>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="ISO-8859-1">
+<title>Insert title here</title>
+</head>
+<body style="background-color:khaki;">
+<h1>UserId or password you have entered is not correct. Please enter correct details or register.</h1>
+<form action="AdminLogin.jsp">
+<input type="submit" value="Click here to go to login page">
+</form>
+</body>
+</html>
+
+
+
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+pageEncoding="ISO-8859-1"%>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="ISO-8859-1">
+<title>Insert title here</title>
+</head>
+<body>
+<h3>Sorry, but your account balance is low to purchase this item</h3>
+<input type="submit" value="Click here to go back and check other items">
+</body>
+</html>
+
+
+
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+pageEncoding="ISO-8859-1"%>
+<%@ page import="java.util.*" %>
+<%@ page import="com.example.demo.*" %>
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="stylesheet" type="text/css" href="Style.css">
+<meta charset="ISO-8859-1">
+<title>Insert title here</title>
+</head>
+<body>
+<div >
+<form action="search">
+<table border=1 >
+<tr colspan="2"><td>
+<div class="topnav" >
+<a class="active" href="#home">Home</a>
+<a href="#about">About</a>
+<a href="#contact">Contact</a>
+<input type="text" placeholder="Search.." name="search">
+</div>
+</td>
+<td align="center"><input type="submit" value="Search"></td>
+</tr>
+</table>
+</form>
+</div>
+<div>
+<table border=2 align="center">
+<tr><td><a href="Food.jsp"><img height =20% width=20% src="/images/grocery.jpg"></a></td><td align="center"><form action="groceryitemlist" ><input type="submit" value="Grocery"></form></td></tr>
+<tr><td><a href="Food.jsp"><img height=20% width=20% src="/images/appliances.jpg"></a></td><td align="center"><form action="applianceitemlist" ><input type="submit" value="Grocery"></form></td></tr>
+<tr><td><a href="vegetables.jsp"><img height=20% width=20% src="/images/vegetables.jpg"></a></td><td align="center"><form action="vegetablesitemlist" ><input type="submit" value="Grocery"></form></td></tr>
+</table>
+</div>
+</div>
+</body>
+</body>
+</html>
+
+
+
+@charset "ISO-8859-1";
+*{
+padding:0;
+margin:0;
+}
+body {
+margin: 0;
+font-family: Arial, Helvetica, sans-serif;
+}
+.topnav {
+overflow: hidden;
+background-color: #e9e9e9;
+}
+.topnav a {
+float: left;
+display: block;
+color: black;
+text-align: center;
+padding: 14px 16px;
+text-decoration: none;
+font-size: 17px;
+}
+.topnav a:hover {
+background-color: #ddd;
+color: black;
+}
+.topnav a.active {
+background-color: #2196F3;
+color: white;
+}
+.topnav input[type=text] {
+float: right;
+padding: 6px;
+margin-top: 8px;
+margin-right: 16px;
+border: none;
+font-size: 17px;
+}
+.topnav input[type=submit]
+{
+float: right;
+padding: 6px;
+margin-top: 8px;
+margin-right: 16px;
+border: none;
+font-size: 17px;
+}
+@media screen and (max-width: 600px) {
+.topnav a, .topnav input[type=text], .topnav input[type=submit] {
+float: none;
+display: block;
+text-align: left;
+width: 100%;
+margin: 0;
+padding: 14px;
+}
+.topnav input[type=text] {
+border: 1px solid #ccc; 
+}
+}
+table {
+border-collapse: collapse;
+width: 100%;
+height:100%;
+border: 1px solid #ddd;
+}
+
+
+
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+pageEncoding="ISO-8859-1"%>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="ISO-8859-1">
+<title>Insert title here</title>
+</head>
+<body>
+<h2>You have purchased the product successfully</h2>
+<form action="getShoe">
+<input type="submit" value="Click here to go back">
+</form>
+</body>
+</html>
+
+
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+pageEncoding="ISO-8859-1"%>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="ISO-8859-1">
+<title>User Login Successful</title>
+</head>
+<body background=
+"https://media.geeksforgeeks.org/wp-content/uploads/rk.png">
+<h1><i>Hi there, please have fun shopping</i></h1>
+</body>
+</html>
+
+
+
+
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+pageEncoding="ISO-8859-1"%>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="ISO-8859-1">
+<title>Insert title here</title>
+</head>
+<style>
+.content{
+max-width: 500px;
+margin:auto;
+}
+</style>
+<body style="background-color:khaki;">
+<div class="content">
+<center>
+<form action="InsertUser">
+<table>
+<tr><td>UserName</td><td> <input type="text" name="UserName"></td></tr><br>
+<tr><td>Password </td><td><input type="password" name="Password"></td></tr><br>
+</table>
+<input type="submit">
+</center>
+</div>
+</form>
+</body>
+</html>
+
+
+
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+pageEncoding="ISO-8859-1"%>
+<%@ page import="java.util.*" %>
+<%@ page import="com.example.demo.*" %>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="ISO-8859-1">
+<title>Insert title here</title>
+</head>
+<body>
+<h1><i>Hi there, please have fun shopping.</i></h1>
+<%
+List<vegetables> list=(List<vegetables>)request.getAttribute("list");
+%>
+<%
+for(vegetables s:list){
+%>
+<form action="AccountDetails.jsp" method="get">
+<table>
+<tr>
+<td><img alt="Failed to load an image" src="/images/<%=s.getName()%>" style="width: 100px; height: 100px;"></p></td><td><br><p>&nbsp&nbsp&nbsp&nbsp<%=s.getVegitableName() %></h3></h3></p><p>&nbsp&nbsp&nbsp&nbsp<%=s.getDescription()%></td><td><%=s.getPrice()%><p>per kg</p></td>
+<td>
+<input type="hidden" name="price" value="<%=s.getPrice()%>">
+<input type="submit" value="Buy">
+</form>
+</td>
+</tr>
+</table>
+<%} %>
+</body>
+</html>
+
+
+
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+pageEncoding="ISO-8859-1"%>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="ISO-8859-1">
+<title>Insert title here</title>
+</head>
+<body>
+<form action="getShoeforAdmin">
+<input type="hidden" value="price">
+<input type="submit" value="Click here to go back">
+</form>
+</body>
+</html>
+
